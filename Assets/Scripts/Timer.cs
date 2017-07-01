@@ -28,7 +28,7 @@ public class Timer : MonoBehaviour {
         Time.timeScale = 1.0f;
         Scene scene = SceneManager.GetActiveScene();
         
-            Countdown = 180.0f;
+            Countdown = 5.0f;
         costs = AppManager.Instance.costs;
         Debug.Log("Timer Costs " + costs);
 
@@ -52,7 +52,7 @@ public class Timer : MonoBehaviour {
         if (!isFinished)
         {
             Countdown -= Time.deltaTime;
-            LevelTimer.text = "Time Left:" + Mathf.Round(Countdown);
+            LevelTimer.text =  ""+Mathf.Round(Countdown);
         }
         if(Countdown <= 0.0f)
         {

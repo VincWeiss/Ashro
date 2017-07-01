@@ -30,7 +30,7 @@ public class CarEngine : MonoBehaviour
     public GameObject Collector;
     private int count=0;
     //private static int highscore;
-    public int ScoreVal=5000;
+    public int ScoreVal=0;
     public Text Score;
     public Text textWin;
     public Text HighScore;
@@ -51,14 +51,22 @@ public class CarEngine : MonoBehaviour
     private int userNodesCount = 0;
     public TextMesh capFollow;
 
+    public Text topHighscore;
+    private string filePath;
+
+    //panel
+    public GameObject UpgradePanel;
+    public GameObject HighscorePanel;
+
     public List<Transform> nodes = new List<Transform>();
     private void Start()
     {
+        readTophighscore();
         changeGameLocation();
+        changePanelLocation();
         GetComponent<Rigidbody>().centerOfMass = centerOfMass;
         count = 0;
         incrementScore();
-        textWin.text = "";
         InvokeRepeating("updateScore", 2.0f, 1.0f);
 
         nodes = new List<Transform>();
@@ -163,22 +171,37 @@ public class CarEngine : MonoBehaviour
         {
             if ((Vector3.Distance(transform.position, nodes[currectNode].position) < 0.015f))
             {
-                /*Debug.Log("Reached WP is " + nodes[currectNode].name);
-                Debug.Log("Currect Node is " + currectNode);
-                Debug.Log("Current WPCount is " + wpCounter);
-                Debug.Log("Nodes.Count is " + nodes.Count);*/
-                /*Debug.Log(currectNode);
-                if (nodes[currectNode].name.Equals("Node")){
-                    nodes.RemoveAt(currectNode);
+                if (nodes[currectNode].name.Contains("Rotate"))
+                {
+                    wheelFL.motorTorque = 0;
+                    wheelFR.motorTorque = 0;
+                    gameObject.transform.Rotate(0, 180, 0);
+                    currectNode = 0;
+                    SoldScoreCount += count;
 
-                    currectNode++;
-                }*/
+                    ScoreVal += count;
+                    count = 0;
+                    Score.text = "Score: " + ScoreVal.ToString();
+                    tempCapacity = 0;
+                    SoldScoreCount = 0;
+                    Capacity.value = tempCapacity;
 
-            
-        
+                    /*Debug.Log("Reached WP is " + nodes[currectNode].name);
+                    Debug.Log("Currect Node is " + currectNode);
+                    Debug.Log("Current WPCount is " + wpCounter);
+                    Debug.Log("Nodes.Count is " + nodes.Count);*/
+                    /*Debug.Log(currectNode);
+                    if (nodes[currectNode].name.Equals("Node")){
+                        nodes.RemoveAt(currectNode);
+
+                        currectNode++;
+                    }*/
+                }
 
 
-            if (currectNode == nodes.Count - 1)
+
+
+                if (currectNode == nodes.Count - 1)
             {
                 currectNode = 0;
                 //nodes = new List<Transform>();
@@ -284,5 +307,23 @@ public class CarEngine : MonoBehaviour
         Game.transform.rotation = AppManager.Instance.PlaneRotation;
         Game.transform.localScale = AppManager.Instance.PlaneScale;
 
+    }
+
+    public void changePanelLocation()
+    {
+        UpgradePanel.transform.position = AppManager.Instance.UpgradePanel.transform.position;
+        UpgradePanel.transform.rotation = AppManager.Instance.UpgradePanel.transform.rotation;
+        UpgradePanel.transform.localScale = AppManager.Instance.UpgradePanel.transform.localScale;
+
+        HighscorePanel.transform.position = AppManager.Instance.HighscorePanel.transform.position;
+        HighscorePanel.transform.rotation = AppManager.Instance.HighscorePanel.transform.rotation;
+        HighscorePanel.transform.localScale = AppManager.Instance.HighscorePanel.transform.localScale;
+    }
+
+    public void readTophighscore()
+    {
+        filePath = Path.Combine(Application.persistentDataPath, "Highscore.txt");
+        string[] Score = System.IO.File.ReadAllLines(filePath);
+        topHighscore.text = Score[0];
     }
 }

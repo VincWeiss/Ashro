@@ -27,7 +27,7 @@ public class AppManager : Singleton<AppManager>
 	// Use this for initialization
 	IEnumerator Start () {
         //Entsprechend Kommentiert!
-        highscore = 200;
+        //highscore = 200;
 
             filePath = Path.Combine(Application.persistentDataPath, "Highscore.txt");
             readHighscore();
@@ -65,7 +65,7 @@ public class AppManager : Singleton<AppManager>
         {
             HighscorePlayerName.enabled = true;
 
-            writeHighscore("Player2",highscore);
+            writeHighscore("Player1",highscore);
         }
         yield return SceneManager.LoadSceneAsync(scenename, LoadSceneMode.Additive);
         Scene loaded = SceneManager.GetSceneByName(scenename);

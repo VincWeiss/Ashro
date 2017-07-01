@@ -11,8 +11,8 @@ public class SingleAsparagus : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        growPosition = new Vector3(0, 0.01f * AppManager.Instance.PlaneScale.y, 0);
-        basicPosition = new Vector3(0, AppManager.Instance.PlaneLocation.y - 0.2f , 0);
+        growPosition = new Vector3(0, 0.002f, 0);
+        basicPosition = new Vector3(0, AppManager.Instance.PlaneLocation.y - 0.1f , 0);
         setActivity();
 
         InvokeRepeating("GrowAsparagus", 1.0f, 1.0f);
@@ -97,7 +97,7 @@ public class SingleAsparagus : MonoBehaviour
     }
     public void secondActivity()
     {
-        int probability = Random.Range(0, 1000);
+        int probability = Random.Range(0, 500);
         gameObject.GetComponent<Renderer>().material.color = Color.white;
         if (probability <= 1)
         {

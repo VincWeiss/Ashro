@@ -38,7 +38,9 @@ public class Asparagus : MonoBehaviour
     {
         Assert.IsNotNull(AsparagusPrefab,"NoPrefab");
         setGameTransforms();
-        locationx = gamePosition.x -0.8f;
+
+        Debug.Log("gamePosition.x " + gamePosition.x);
+        locationx = gamePosition.x -1.5f;
         //locationy = gamePosition.z - (0.2f * gameScale.y);
         distance = 0.25f;
         Debug.Log("Distance "+distance);
@@ -62,11 +64,15 @@ public class Asparagus : MonoBehaviour
         for (int i = 0; i < amountAsparagusx; i++)
         {
             locationx = locationx + distance;
-            locationy = gamePosition.z - 1.8f;
+            Debug.Log("gamePosition.z " + gamePosition.z);
+            locationy = gamePosition.z - 3.5f;
             for (int j = 0; j < amountAsparagusy; j++)
             {
+                locationy = locationy + distance;
                 var asparagus = Instantiate(AsparagusPrefab);
-                asparagus.transform.position = new Vector3(locationx, gamePosition.y - 0.2f, locationy);
+
+                Debug.Log("gamePosition.y " + gamePosition.y);
+                asparagus.transform.position = new Vector3(locationx, gamePosition.y - 0.00001f, locationy);
                 asparagus.transform.parent = AsparagusParent.transform;
             }
         }
