@@ -71,9 +71,14 @@ public class AppManager : Singleton<AppManager> {
 
     public Vector3 PlaneScale { get; set; }
 
-    public Transform HighscorePanel { get; set; }
 
-    public Transform UpgradePanel { get; set; }
+    public Vector3 UpgradePanelScale { get; set; }
+    public Vector3 UpgradePanelLocation { get; set; }
+    public Quaternion UpgradePanelRotation { get; set; }
+
+    public Vector3 HighscorePanelScale { get; set; }
+    public Vector3 HighscorePanelLocation { get; set; }
+    public Quaternion HighscorePanelRotation { get; set; }
 
     public float costs { get; set; }
 

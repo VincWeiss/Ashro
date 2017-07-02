@@ -2,8 +2,8 @@
 
 public class PlanePosition : MonoBehaviour {
     public GameObject planeToPlace;
-    public Transform HighscorePanel;
-    public Transform UpgradePanel;
+    public GameObject localHighscorePanel;
+    public GameObject localUpgradePanel;
 
     /*onClick method for the mapping scene.
     Called when user taps the "tapToConfirm" button.
@@ -16,8 +16,14 @@ public class PlanePosition : MonoBehaviour {
         AppManager.Instance.PlaneRotation = planeToPlace.transform.rotation;
         AppManager.Instance.PlaneScale = planeToPlace.transform.localScale;
 
-        AppManager.Instance.UpgradePanel = UpgradePanel;
-        AppManager.Instance.HighscorePanel = HighscorePanel;
+
+        AppManager.Instance.UpgradePanelLocation = localUpgradePanel.transform.position;
+        AppManager.Instance.UpgradePanelRotation = localUpgradePanel.transform.rotation;
+        AppManager.Instance.UpgradePanelScale = localUpgradePanel.transform.localScale;
+
+        AppManager.Instance.HighscorePanelLocation = localHighscorePanel.transform.position;
+        AppManager.Instance.HighscorePanelRotation = localHighscorePanel.transform.rotation;
+        AppManager.Instance.HighscorePanelScale = localHighscorePanel.transform.localScale;
         StartCoroutine(AppManager.Instance.switchScenes(sceneName));
     }
 }

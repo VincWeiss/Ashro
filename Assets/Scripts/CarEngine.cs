@@ -35,8 +35,8 @@ public class CarEngine : MonoBehaviour {
     public TextMesh capFollow;
     public Text topHighscore;
     private string filePath;
-    public Transform UpgradePanel;
-    public Transform HighscorePanel;
+    public GameObject UpgradePanel;
+    public GameObject HighscorePanel;
     public List<Transform> nodes = new List<Transform>();
     public float BuyUpgradeScore;
     public GameObject MotorButton;
@@ -208,13 +208,13 @@ public class CarEngine : MonoBehaviour {
 
     /*Gets the panel position from AppManager to place the panel in the level*/
     public void changePanelLocation() {
-        UpgradePanel.transform.position = AppManager.Instance.UpgradePanel.transform.position;
-        UpgradePanel.transform.rotation = AppManager.Instance.UpgradePanel.transform.rotation;
-        UpgradePanel.transform.localScale = AppManager.Instance.UpgradePanel.transform.localScale;
+        UpgradePanel.transform.position = AppManager.Instance.UpgradePanelLocation;
+        UpgradePanel.transform.rotation = AppManager.Instance.UpgradePanelRotation;
+        UpgradePanel.transform.localScale = AppManager.Instance.UpgradePanelScale;
 
-        HighscorePanel.transform.position = AppManager.Instance.HighscorePanel.transform.position;
-        HighscorePanel.transform.rotation = AppManager.Instance.HighscorePanel.transform.rotation;
-        HighscorePanel.transform.localScale = AppManager.Instance.HighscorePanel.transform.localScale;
+        HighscorePanel.transform.position = AppManager.Instance.HighscorePanelLocation;
+        HighscorePanel.transform.rotation = AppManager.Instance.HighscorePanelRotation;
+        HighscorePanel.transform.localScale = AppManager.Instance.HighscorePanelScale;
     }
 
     //reads the TXT with the global Highscore and implements to the highscore panel (UI)
