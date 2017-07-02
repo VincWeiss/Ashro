@@ -1,23 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlanePosition : MonoBehaviour {
     public GameObject planeToPlace;
     public Transform HighscorePanel;
     public Transform UpgradePanel;
-    // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
-    public void ChangeScene(string sceneName)
-    {
+    /*onClick method for the mapping scene.
+    Called when user taps the "tapToConfirm" button.
+    Sets the plane and the panels to the AppManager class.
+    The method is loading the new scene*/
+    public void ChangeScene(string sceneName) {
         Debug.Log("Change Scene method");
         Debug.Log(planeToPlace.transform.position);
         AppManager.Instance.PlaneLocation = planeToPlace.transform.position;
@@ -26,9 +18,6 @@ public class PlanePosition : MonoBehaviour {
 
         AppManager.Instance.UpgradePanel = UpgradePanel;
         AppManager.Instance.HighscorePanel = HighscorePanel;
-
-
         StartCoroutine(AppManager.Instance.switchScenes(sceneName));
-
     }
 }

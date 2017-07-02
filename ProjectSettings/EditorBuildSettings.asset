@@ -18,23 +18,32 @@ EditorBuildSettings:
     path: Assets/Scenes/Menu.unity
     guid: 76b4ed646b56d914daf33c7023865294
   - enabled: 0
-    path: Assets/Scenes/HoloTrial 1.unity
+    path: 
     guid: d37b9fb35eba6fe4ebed16f885cd2c7e
   - enabled: 0
-    path: Assets/Scenes/HoloTrial 2.unity
+    path: 
     guid: 09df0ee988e00fa48ab97fc9375fa103
   - enabled: 0
-    path: Assets/Scenes/HoloTrial 3.unity
+    path: 
     guid: dd1fc809fe67c50429427555119e133c
   - enabled: 1
     path: Assets/Scenes/Mapping.unity
     guid: 23a805874feafaa43958417c5337d503
-  - enabled: 1
-    path: Assets/Scenes/Level2.unity
+  - enabled: 0
+    path: 
     guid: 71c9487ed28de8b48b71f6cfa32267bf
-  - enabled: 1
-    path: Assets/Scenes/Level3.unity
+  - enabled: 0
+    path: 
     guid: 0729927a79d351e42961f7eb6c83c15f
   - enabled: 1
-    path: Assets/Scenes/Level4.unity
+    path: Assets/Scenes/LastLvl.unity
     guid: 588d6bdc28909564fb6b68faef1c2e5a
+  - enabled: 1
+    path: Assets/Scenes/Level4.unity
+    guid: 777d1948054abc345963d0adbc79acff
+  - enabled: 1
+    path: Assets/Scenes/Level2.unity
+    guid: 7281899c361871a4497399c84cd36311
+  - enabled: 1
+    path: Assets/Scenes/Level3.unity
+    guid: fb2c3dcb3fefb2741a16e8eb934d73ff

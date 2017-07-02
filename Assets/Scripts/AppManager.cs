@@ -7,46 +7,32 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class AppManager : Singleton<AppManager>
-{
+public class AppManager : Singleton<AppManager> {
     Vector3 GameLocation = new Vector3();
     public string StartingScene = "MainMenu";
     private string filePath;
-    private int levelCount=1;
+    private int levelCount = 1;
     public Text HighscorePlayerName;
     public Dictionary<string, int> Highscorelist;
-    
 
-    enum scenes{
-        Level1,
-        Level2,
-        Level3,
-        Level4
+    // Use this method for initialization
+    IEnumerator Start() {
+        filePath = Path.Combine(Application.persistentDataPath, "Highscore.txt");
+        readHighscore();
+        yield return StartCoroutine(LoadAndSetActive(StartingScene));
     }
 
-	// Use this for initialization
-	IEnumerator Start () {
-        //Entsprechend Kommentiert!
-        //highscore = 200;
-
-            filePath = Path.Combine(Application.persistentDataPath, "Highscore.txt");
-            readHighscore();
-
-        yield return StartCoroutine(LoadandSetActive(StartingScene));
-    }
-	
-    public IEnumerator LoadandSetActive(string scenename)
-    {
+    /*loading and setting the game scenes*/
+    public IEnumerator LoadAndSetActive(string scenename) {
         yield return SceneManager.LoadSceneAsync(scenename, LoadSceneMode.Additive);
         Scene loaded = SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
         SceneManager.SetActiveScene(loaded);
     }
-    public IEnumerator switchScenes(string scenename)
-    {
-        //Costs
-        if (scenename.Contains("Level")){
-            switch (scenename)
-            {
+
+    /*switch case for different levels as scenes*/
+    public IEnumerator switchScenes(string scenename) {
+        if(scenename.Contains("Level")) {
+            switch(scenename) {
                 case "Level1":
                     costs = 50.0f;
                     break;
@@ -61,26 +47,21 @@ public class AppManager : Singleton<AppManager>
                     break;
             }
         }
-        if (scenename.Equals("MainMenu")&& highscore!=0)
-        {
+        if(scenename.Equals("MainMenu") && highscore != 0) {
             HighscorePlayerName.enabled = true;
 
-            writeHighscore("Player1",highscore);
+            writeHighscore("Player1", highscore);
         }
         yield return SceneManager.LoadSceneAsync(scenename, LoadSceneMode.Additive);
         Scene loaded = SceneManager.GetSceneByName(scenename);
         Scene current = SceneManager.GetActiveScene();
-
         yield return null;
-
         SceneManager.SetActiveScene(loaded);
-
         yield return null;
-
         yield return SceneManager.UnloadSceneAsync(current.buildIndex);
     }
-    
-    public Vector3  PanelLocation { get; set; }
+
+    public Vector3 PanelLocation { get; set; }
 
     public Quaternion PanelRotation { get; set; }
 
@@ -100,45 +81,35 @@ public class AppManager : Singleton<AppManager>
 
     public string Levelname { get; set; }
 
-    public void writeHighscore(string name, int score)
-    {
-        if (Highscorelist.ContainsKey(name))
-        {
-            Highscorelist[name] = score;
-        }
-        else
-        {
+    /*called when user failed and get readirected to the main menu*/
+    public void writeHighscore(string name, int score) {
+        if(Highscorelist [name] <= highscore && Highscorelist.ContainsKey(name)) {
+            Highscorelist [name] = score;
+        } else {
             Highscorelist.Add(name, score);
-
         }
-
         Highscorelist = Highscorelist.OrderByDescending(pair => pair.Value).ToDictionary(pair => pair.Key, pair => pair.Value);
 
-        string[] lines = new string[Highscorelist.Values.Count];
+        string [] lines = new string [Highscorelist.Values.Count];
         int i = 0;
-        foreach (var pair in Highscorelist)
-        {
-            lines[i++] = string.Format("{0}:{1}", pair.Key, pair.Value); 
+        foreach(var pair in Highscorelist) {
+            lines [i++] = string.Format("{0}:{1}", pair.Key, pair.Value);
         }
-
         System.IO.File.WriteAllLines(filePath, lines);
     }
 
-    public void readHighscore()
-    {
+    /*called on start.
+    reads the txt and adds the values to the hash map with the dictionary*/
+    public void readHighscore() {
         Highscorelist = new Dictionary<string, int>();
-        try
-        {
-            string[] Score = System.IO.File.ReadAllLines(filePath);
-            for (int i = 0; i < Score.Length; i++)
-            {
-                string[] split = Score[i].Split(':');
+        try {
+            string [] Score = System.IO.File.ReadAllLines(filePath);
+            for(int i = 0; i < Score.Length; i++) {
+                string [] split = Score [i].Split(':');
 
-                Highscorelist.Add(split[0], int.Parse(split[1]));
+                Highscorelist.Add(split [0], int.Parse(split [1]));
             }
-        }
-        catch (IOException e)
-        {
+        } catch(IOException e) {
         }
     }
 }

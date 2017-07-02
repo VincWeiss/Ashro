@@ -1,10 +1,8 @@
 ﻿using HoloToolkit.Unity;
 using UnityEngine;
 
-public class PlacementResult
-{
-    public PlacementResult(SpatialUnderstandingDllObjectPlacement.ObjectPlacementResult result, Vector3 dimensions, ObjectType objType)
-    {
+public class PlacementResult {
+    public PlacementResult(SpatialUnderstandingDllObjectPlacement.ObjectPlacementResult result, Vector3 dimensions, ObjectType objType) {
         _result = result;
         Dimensions = dimensions;
         ObjType = objType;

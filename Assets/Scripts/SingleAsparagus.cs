@@ -1,111 +1,81 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class SingleAsparagus : MonoBehaviour
-{
-    Asparagus asparagus = new Asparagus();
-    int countTime = 0;
-    Vector3 growPosition;
+public class SingleAsparagus : MonoBehaviour {
+    private int countTime = 0;
+    Vector3 growPosition = new Vector3(0, 0.002f, 0);
     Vector3 basicPosition;
-    // Use this for initialization
-    void Start()
-    {
-        growPosition = new Vector3(0, 0.002f, 0);
-        basicPosition = new Vector3(0, AppManager.Instance.PlaneLocation.y - 0.1f , 0);
+    Vector3 startPosition;
+
+    void Start() {
+        basicPosition = new Vector3(gameObject.transform.position.x, gameObject.transform.position.y-0.06f, gameObject.transform.position.z);
+        Debug.Log("BASICPOSITION " + basicPosition);
+        startPosition = gameObject.transform.position;
         setActivity();
-
         InvokeRepeating("GrowAsparagus", 1.0f, 1.0f);
-
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    void GrowAsparagus()
-    {
-        if (gameObject.activeSelf)
-        {
-            if (countTime <= 15)
-            {
+    /*called every second
+     the asparagus growing method for the different asparagus status*/
+    void GrowAsparagus() {
+        if(gameObject.activeSelf==true) {
+            if(countTime <= 15) {
                 gameObject.transform.position += growPosition;
                 countTime++;
                 gameObject.name = "growing";
             }
-            if (countTime > 15 && countTime <= 30)
-            {
-
+            if(countTime > 15 && countTime <= 30) {
                 gameObject.transform.position += growPosition;
                 countTime++;
                 gameObject.name = "precocious";
-            }
-            else if (countTime > 30 && countTime <= 60)
-            {
+            } else if(countTime > 30 && countTime <= 60) {
                 gameObject.GetComponent<Renderer>().material.color = Color.green;
-
                 countTime++;
                 gameObject.name = "ripe";
-
-            }
-            else if (countTime > 60 && countTime <= 90)
-            {
+            } else if(countTime > 60 && countTime <= 90) {
                 gameObject.GetComponent<Renderer>().material.color = new Color32(139, 69, 19, 1);
                 gameObject.name = "inedible";
                 countTime++;
-
-            }
-            else if (countTime > 90 && countTime <= 120)
-            {
-                gameObject.name = "blocked";
-                gameObject.GetComponent<Renderer>().material.color = Color.white;
-                gameObject.transform.position = basicPosition;
-
+            } else if(countTime == 91) {
+                while(gameObject.transform.position.y >= (AppManager.Instance.PlaneLocation.y - 0.05f)) {
+                    gameObject.transform.position -= new Vector3(0, 0.001f, 0);
+                }
                 countTime++;
-
             }
-            else if (countTime > 120)
-            {
-                gameObject.name = "aspargus";
+             else if(countTime > 91 && countTime <= 105) {
+                gameObject.name = "blocked";
+                //gameObject.transform.position = basicPosition;
+                gameObject.GetComponent<Renderer>().material.color = Color.white;
+                countTime++;
+            } else if(countTime > 105) {
+                gameObject.name = "asparagus";
                 gameObject.SetActive(false);
                 countTime = 0;
-
             }
-        }
-        else
-        {
+        } else {
+            
             secondActivity();
         }
     }
 
-
-    public void setActivity()
-    {
+    /*sets the probability if an aspargus is growing or not for the first time*/
+    public void setActivity() {
         int probability = Random.Range(0, 101);
-
-        if (probability <= 5)
-        {
+        if(probability <= 5) {
             gameObject.SetActive(true);
-        }
-        else
-        {
+        } else {
             gameObject.SetActive(false);
         }
-
     }
-    public void secondActivity()
-    {
-        int probability = Random.Range(0, 500);
+
+    /*sets the probability if an aspargus is growing or not for the second time*/
+    public void secondActivity() {
+        int probability = Random.Range(0, 100);
         gameObject.GetComponent<Renderer>().material.color = Color.white;
-        if (probability <= 1)
-        {
-            gameObject.SetActive(true);
+        if(probability <= 5) {
             countTime = 0;
-        }
-        else
-        {
+            //gameObject.transform.position = startPosition;
+            gameObject.SetActive(true);
+        } else {
             gameObject.SetActive(false);
         }
     }

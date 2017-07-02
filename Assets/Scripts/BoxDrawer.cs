@@ -3,10 +3,8 @@ using System.Collections.Generic;
 
 public class BoxDrawer
 {
-    // Consts
     public const float DefaultLineWidth = 0.001f;
     public const float DefaultBasisLength = 0.2f;
-
     private readonly GameObject _callingObject;
 
     public BoxDrawer(GameObject callingObject)
@@ -14,10 +12,8 @@ public class BoxDrawer
         _callingObject = callingObject;
     }
 
-    // Structs
     public class Line
     {
-        // Functions
         public Line()
         {
         }

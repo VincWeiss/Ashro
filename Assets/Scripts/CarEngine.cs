@@ -1,66 +1,62 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using System;
 using System.IO;
 
-public class CarEngine : MonoBehaviour
-{
+public class CarEngine : MonoBehaviour {
     public GameObject Game;
     public Transform path;
     public float maxSteerAngle = 45f;
-    public WheelCollider wheelFL;
-    public WheelCollider wheelFR;
-    public WheelCollider wheelRL;
-    public WheelCollider wheelRR;
-    public float maxBrakeTorque = 150f;
-    public float maxMotorTorque = 15f;
-    
+    public WheelCollider wheelFL, wheelFR, wheelRL, wheelRR;
+    public float maxBrakeTorque = 150f, maxMotorTorque = 15f;
     public float currentSpeed;
     public float maxSpeed = 100f;
     public Vector3 centerOfMass;
     public float mass;
-    public bool isBraking = false;
     public int amountNodes = 2;
     public float MaxCapacity = 10;
     private float tempCapacity = 0;
     public Slider Capacity;
-    GameObject Waypoint;
+    public GameObject Waypoint;
     public GameObject Collector;
-    private int count=0;
-    //private static int highscore;
-    public int ScoreVal=0;
+    public int count = 0;
+    public int ScoreVal = 100;
     public Text Score;
-    public Text textWin;
     public Text HighScore;
     public Text SoldScore;
-    int SoldScoreCount = 0;
+    public int SoldScoreCount = 0;
     protected int userNodeCounter = 4;
-    [Header("Sensors")]
-    public float sensorLength = 0.1f;
-    public Vector3 frontSensorPosition = new Vector3(0f, 0.2f, 0.5f);
-    Vector3 temp2 = new Vector3(0, -0.55f, 0);
-    public float frontSideSensorPosition = 0.2f;
-    public float frontSensorAngle = 30f;
-    //public Patrol patrol = new Patrol();
+    public Vector3 temp2;
     public SphereCommands patrol = new SphereCommands();
     public int currectNode = 0;
     public int wpCounter = 0;
     public Color rayColor = Color.yellow;
     private int userNodesCount = 0;
     public TextMesh capFollow;
-
     public Text topHighscore;
     private string filePath;
-
-    //panel
-    public GameObject UpgradePanel;
-    public GameObject HighscorePanel;
-
+    public Transform UpgradePanel;
+    public Transform HighscorePanel;
     public List<Transform> nodes = new List<Transform>();
-    private void Start()
-    {
+    public float BuyUpgradeScore;
+    public GameObject MotorButton;
+    public GameObject CapacityButton;
+    public Text textMotor;
+    public int UpgradeMotorCount = 0;
+    public Text textCapacity;
+    public int UpgradeCapacityCount = 0;
+
+    /*initilasation of dynamicvariables and transformation of preset waypoints in a list*/
+    private void Start() {
+        Debug.Log("Start");
+        nodes = new List<Transform>();
+        Transform [] pathTransforms = path.GetComponentsInChildren<Transform>();
+        for(int i = 0; i < pathTransforms.Length; i++) {
+            if(pathTransforms [i] != path.transform) {
+                nodes.Add(pathTransforms [i]);
+            }
+        }
+        currectNode = 0;
         readTophighscore();
         changeGameLocation();
         changePanelLocation();
@@ -68,249 +64,150 @@ public class CarEngine : MonoBehaviour
         count = 0;
         incrementScore();
         InvokeRepeating("updateScore", 2.0f, 1.0f);
-
-        nodes = new List<Transform>();
-        Transform[] pathTransforms = path.GetComponentsInChildren<Transform>();
-
-
-        for (int i = 0; i < pathTransforms.Length; i++)
-        {
-            if (pathTransforms[i] != path.transform)
-            {
-                nodes.Add(pathTransforms[i]);
-            }
-        }
-
     }
 
-    private void Update()
-    {
-
-
-        
-       
-        
+    /*called at the beginning of every frame*/
+    private void Update() {
+        checkForUpgrade();
     }
-    private void FixedUpdate()
-    {
-        
-           
-            ApplySteer();
-            Drive();
-            CheckWaypointDistance();
-            //Braking();
 
-       
+    /*called at the end of every frame*/
+    private void FixedUpdate() {
+        ApplySteer();
+        Drive();
+        CheckWaypointDistance();
     }
-    
- 
-    
-    private void ApplySteer()
-    {
-        if (patrol.userNodes.Count > 0){
-            Vector3 relativeVector = transform.InverseTransformPoint(patrol.userNodes[0].transform.position);
+
+    /*checks the steering ankle of the steering wheelcollider and 
+    sets them in the direction of the waypoints */
+    private void ApplySteer() {
+        if(patrol.userNodes.Count > 0) {
+            Vector3 relativeVector = transform.InverseTransformPoint(patrol.userNodes [0].transform.position);
             float newSteer = (relativeVector.x / relativeVector.magnitude) * maxSteerAngle;
             wheelFL.steerAngle = newSteer;
             wheelFR.steerAngle = newSteer;
-        }else
-        {
-        Vector3 relativeVector = transform.InverseTransformPoint(nodes[currectNode].position);
-        float newSteer = (relativeVector.x / relativeVector.magnitude) * maxSteerAngle;
-        wheelFL.steerAngle = newSteer;
-        wheelFR.steerAngle = newSteer;
+        } else {
+            Vector3 relativeVector = transform.InverseTransformPoint(nodes [currectNode].position);
+            float newSteer = (relativeVector.x / relativeVector.magnitude) * maxSteerAngle;
+            wheelFL.steerAngle = newSteer;
+            wheelFR.steerAngle = newSteer;
         }
     }
 
-    private void Drive()
-    {
+    /*checks the speed of the wheelcollider and 
+    sets the speed if under limit*/
+    private void Drive() {
         currentSpeed = 2 * Mathf.PI * wheelFL.radius * wheelFL.rpm * 60 / 1000;
-
-        if (currentSpeed < maxSpeed && !isBraking)
-        {
+        if(currentSpeed < maxSpeed) {
             wheelFL.motorTorque = maxMotorTorque;
             wheelFR.motorTorque = maxMotorTorque;
-        }
-        else
-        {
+        } else {
             wheelFL.motorTorque = 0;
             wheelFR.motorTorque = 0;
         }
     }
 
-    private void CheckWaypointDistance()
-    {
-        if (patrol.userNodes.Count > 0)
-        {
-            if ((Vector3.Distance(transform.position, patrol.userNodes[0].transform.position) < 0.015f))
-            {
-                if (patrol.userNodes[0].name.Contains("Rotate"))
-                {
-                    wheelFL.motorTorque = 0;
-                    wheelFR.motorTorque = 0;
-                    gameObject.transform.Rotate(0, 180, 0);
-                    currectNode = 0;
-                    SoldScoreCount += count;
-
-                    SoldScore.text = "Sold asparagus: " + SoldScoreCount.ToString();
-                    ScoreVal += count;
-                    count = 0;
-                    Score.text = "Score: " + ScoreVal.ToString();
-                    tempCapacity = 0;
-                    SoldScoreCount = 0;
-                    Capacity.value = tempCapacity;
+    /*checks the distance to the next waypoint. If distance small enough the waypoint is reached and 
+     the next waypoint is set as current.
+     If car reaches the barn it gets roated by 180 degrees*/
+    private void CheckWaypointDistance() {
+        if(patrol.userNodes.Count > 0) {
+            if((Vector3.Distance(transform.position, patrol.userNodes [0].transform.position) < 0.015f)) {
+                if(patrol.userNodes [0].name.Contains("Rotate")) {
+                    setParametersAfterRotation();
                 }
-                if(patrol.userNodes[0].name == "Node")
-                {
-                Destroy(patrol.userNodes[0]);
+                if(patrol.userNodes [0].name == "Node") {
+                    Destroy(patrol.userNodes [0]);
                 }
                 patrol.userNodes.RemoveAt(0);
             }
-
-        }
-        else
-        {
-            if ((Vector3.Distance(transform.position, nodes[currectNode].position) < 0.015f))
-            {
-                if (nodes[currectNode].name.Contains("Rotate"))
-                {
-                    wheelFL.motorTorque = 0;
-                    wheelFR.motorTorque = 0;
-                    gameObject.transform.Rotate(0, 180, 0);
-                    currectNode = 0;
-                    SoldScoreCount += count;
-
-                    ScoreVal += count;
-                    count = 0;
-                    Score.text = "Score: " + ScoreVal.ToString();
-                    tempCapacity = 0;
-                    SoldScoreCount = 0;
-                    Capacity.value = tempCapacity;
-
-                    /*Debug.Log("Reached WP is " + nodes[currectNode].name);
-                    Debug.Log("Currect Node is " + currectNode);
-                    Debug.Log("Current WPCount is " + wpCounter);
-                    Debug.Log("Nodes.Count is " + nodes.Count);*/
-                    /*Debug.Log(currectNode);
-                    if (nodes[currectNode].name.Equals("Node")){
-                        nodes.RemoveAt(currectNode);
-
-                        currectNode++;
-                    }*/
+        } else {
+            if((Vector3.Distance(transform.position, nodes [currectNode].position) < 0.015f)) {
+                if(nodes [currectNode].name.Contains("Rotate")) {
+                    setParametersAfterRotation();
                 }
-
-
-
-
-                if (currectNode == nodes.Count - 1)
-            {
-                currectNode = 0;
-                //nodes = new List<Transform>();
+                if(currectNode == nodes.Count - 1) {
+                    currectNode = 0;
+                } else {
+                    currectNode++;
+                }
             }
-            else
-            {
-                
-                currectNode++;
-            }
-            //Debug.Log("New currect Node is " + currectNode);
-        }
-
-        }
-
-    }
-
-    private void Braking()
-    {
-        if (isBraking)
-        {
-
-            wheelRL.brakeTorque = maxBrakeTorque;
-            wheelRR.brakeTorque = maxBrakeTorque;
-        }
-        else
-        {
-
-            wheelRL.brakeTorque = 0;
-            wheelRR.brakeTorque = 0;
         }
     }
 
-    void OnTriggerEnter(Collider boxCollider)
-    {
-        
-        //Debug.Log("Collision");
-        
-        /*
-        if (boxCollider.gameObject.name == ("Barn_station"))
-        {
-            SoldScoreCount += count;
-            SoldScore.text = "Sold asparagus: " + SoldScoreCount.ToString();
-            count = 0;
-            textCount.text = "Score: " + count.ToString();
-        }*/
-        if (tempCapacity < MaxCapacity)
-        {
-            if (boxCollider.gameObject.name == ("ripe"))
-            {
-                count += 15;
+    //Parameters after rotation
+    private void setParametersAfterRotation() {
+        wheelFL.motorTorque = 0;
+        wheelFR.motorTorque = 0;
+        gameObject.transform.Rotate(0, 180, 0);
+        currectNode = 0;
+        SoldScoreCount += count;
+        ScoreVal += count;
+        count = 0;
+        Score.text = "Score: " + ScoreVal.ToString();
+        tempCapacity = 0;
+        SoldScoreCount = 0;
+        Capacity.value = tempCapacity;
+        BuyUpgradeScore = ScoreVal;
+    }
+
+    /*@Param Collider boxcollider
+     Handles the car collecting asparagus event*/
+    void OnTriggerEnter(Collider boxCollider) {
+        if(tempCapacity < MaxCapacity) {
+            if(boxCollider.gameObject.name == ("ripe")) {
+                setAsparagusScorePoints(15, boxCollider);
                 AppManager.highscore += 15;
-                
-                //SoldScore.text = count.ToString();
-                boxCollider.gameObject.SetActive(false);
-                //Debug.Log(count);
-                boxCollider.gameObject.transform.position = temp2;
-                tempCapacity++;
             }
-            if (boxCollider.gameObject.name == ("precocious"))
-            {
-                count += 5;
+            if(boxCollider.gameObject.name == ("precocious")) {
+                setAsparagusScorePoints(5, boxCollider);
                 AppManager.highscore += 5;
-                boxCollider.gameObject.SetActive(false);
-                boxCollider.gameObject.transform.position = temp2;
-                tempCapacity++;
             }
-            if (boxCollider.gameObject.name == ("inedible"))
-            {
-                count -= 20;
-                boxCollider.gameObject.SetActive(false);
-                boxCollider.gameObject.transform.position = temp2;
-                tempCapacity++;
+            if(boxCollider.gameObject.name == ("inedible")) {
+                setAsparagusScorePoints(-20, boxCollider);
             }
             incrementScore();
-        }else if(boxCollider.gameObject.name == "inedible" || boxCollider.gameObject.name == "precocious" || boxCollider.gameObject.name == "ripe")
-        {
+        } else if(boxCollider.gameObject.name == "inedible" || boxCollider.gameObject.name == "precocious" || boxCollider.gameObject.name == "ripe") {
             boxCollider.gameObject.SetActive(false);
-            boxCollider.gameObject.transform.position = temp2;
-        }
+            while(boxCollider.gameObject.transform.position.y >= (Game.transform.position.y - 0.05f)){
 
+            boxCollider.gameObject.transform.position -= new Vector3(0,0.001f,0);
+            }
+            //boxCollider.gameObject.transform.position += temp2;
+        }
         Capacity.value = tempCapacity;
     }
 
-    void incrementScore()
-    {
-        HighScore.text = "Highscore: " + AppManager.highscore.ToString();
-        //Score.text = "Score: " + count.ToString();
-        if (count >= 300)
-        {
-            textWin.text = "Winner";
+    //adding the score points to the global count
+    private void setAsparagusScorePoints(int value, Collider boxCollider) {
+        count = count + value;
+        boxCollider.gameObject.SetActive(false);
+        while(boxCollider.gameObject.transform.position.y >= (Game.transform.position.y - 0.05f)) {
+
+            boxCollider.gameObject.transform.position -= new Vector3(0, 0.001f, 0);
         }
+        tempCapacity++;
     }
 
+    /*called every time an asparagus is collected.
+    Displays the highscore to the global panel*/
+    void incrementScore() {
+        HighScore.text = "Highscore: " + AppManager.highscore.ToString();
+    }
 
-    void updateScore()
-    {
+    void updateScore() {
         Score.text = "Score: " + ScoreVal.ToString();
     }
 
-    public void changeGameLocation()
-    {
+    /*Gets the game position from AppManager to place the game field in the level*/
+    public void changeGameLocation() {
         Game.transform.position = AppManager.Instance.PlaneLocation;
         Game.transform.rotation = AppManager.Instance.PlaneRotation;
         Game.transform.localScale = AppManager.Instance.PlaneScale;
-
     }
 
-    public void changePanelLocation()
-    {
+    /*Gets the panel position from AppManager to place the panel in the level*/
+    public void changePanelLocation() {
         UpgradePanel.transform.position = AppManager.Instance.UpgradePanel.transform.position;
         UpgradePanel.transform.rotation = AppManager.Instance.UpgradePanel.transform.rotation;
         UpgradePanel.transform.localScale = AppManager.Instance.UpgradePanel.transform.localScale;
@@ -320,10 +217,54 @@ public class CarEngine : MonoBehaviour
         HighscorePanel.transform.localScale = AppManager.Instance.HighscorePanel.transform.localScale;
     }
 
-    public void readTophighscore()
-    {
+    //reads the TXT with the global Highscore and implements to the highscore panel (UI)
+    public void readTophighscore() {
         filePath = Path.Combine(Application.persistentDataPath, "Highscore.txt");
-        string[] Score = System.IO.File.ReadAllLines(filePath);
-        topHighscore.text = Score[0];
+        string [] Score = System.IO.File.ReadAllLines(filePath);
+        topHighscore.text = Score [0];
+    }
+
+    /*called every frame.
+    Checks if the user has enough money to buy an upgrade.
+    Is set inactive if the score is low*/
+    public void checkForUpgrade() {
+        if(ScoreVal >= 50.0f) {
+            MotorButton.SetActive(true);
+            CapacityButton.SetActive(true);
+        } else {
+            MotorButton.SetActive(false);
+            CapacityButton.SetActive(false);
+        }
+    }
+
+    //called if user wants to upgrade his truck
+    //coast for upgrade 50 points
+    //called max 5 times
+    public void MotorUpgrade() {
+        if(UpgradeMotorCount <= 5) {
+            count -= 50;
+            ScoreVal -= 50;
+            Score.text = "Score: " + ScoreVal.ToString();
+            maxMotorTorque += 2;
+            maxSpeed += 2;
+            UpgradeMotorCount++;
+            textMotor.text = "Motor: " + UpgradeMotorCount + "/5";
+        }
+
+    }
+
+    //called if user wants to upgrade capacity of his truck
+    //coast for upgrade 50 points
+    //called max 5 times
+    public void CapacityUpgrade() {
+        if(UpgradeCapacityCount <= 5) {
+            ScoreVal -= 50;
+            count -= 50;
+            MaxCapacity += 3;
+            Score.text = "Score: " + ScoreVal.ToString();
+            UpgradeCapacityCount++;
+            Capacity.maxValue = MaxCapacity;
+            textCapacity.text = "Capacity: " + UpgradeCapacityCount + "/5";
+        }
     }
 }

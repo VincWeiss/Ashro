@@ -5,22 +5,19 @@ using System;
 using UnityEngine;
 using HoloToolkit.Unity.SpatialMapping;
 
-namespace HoloToolkit.Unity
-{
+namespace HoloToolkit.Unity {
     /// <summary>
     /// The SpatialUnderstanding class controls the state and flow of the 
     /// scanning process used in the understanding module. 
     /// </summary>
     [RequireComponent(typeof(SpatialUnderstandingSourceMesh))]
     [RequireComponent(typeof(SpatialUnderstandingCustomMesh))]
-    public class SpatialUnderstanding : Singleton<SpatialUnderstanding>
-    {
+    public class SpatialUnderstanding : Singleton<SpatialUnderstanding> {
         // Consts
         public const float ScanSearchDistance = 8.0f;
 
         // Enums
-        public enum ScanStates
-        {
+        public enum ScanStates {
             None,
             ReadyToScan,
             Scanning,
@@ -40,10 +37,8 @@ namespace HoloToolkit.Unity
         /// <summary>
         /// Switch used by the entire SpatialUnderstanding module to activate processing.
         /// </summary>
-        public bool AllowSpatialUnderstanding
-        {
-            get
-            {
+        public bool AllowSpatialUnderstanding {
+            get {
                 return true;
             }
         }
@@ -63,17 +58,13 @@ namespace HoloToolkit.Unity
         /// <summary>
         /// Indicates the current state of the scan process
         /// </summary>
-        public ScanStates ScanState
-        {
-            get
-            {
+        public ScanStates ScanState {
+            get {
                 return scanState;
             }
-            private set
-            {
+            private set {
                 scanState = value;
-                if (ScanStateChanged != null)
-                {
+                if(ScanStateChanged != null) {
                     ScanStateChanged();
                 }
 
@@ -85,12 +76,9 @@ namespace HoloToolkit.Unity
         /// Indicates the the scanning statistics are still being processed.
         /// Request finish should not be called when this is true. 
         /// </summary>
-        public bool ScanStatsReportStillWorking
-        {
-            get
-            {
-                if (AllowSpatialUnderstanding)
-                {
+        public bool ScanStatsReportStillWorking {
+            get {
+                if(AllowSpatialUnderstanding) {
                     SpatialUnderstandingDll.Imports.PlayspaceStats stats = UnderstandingDLL.GetStaticPlayspaceStats();
                     return (stats.IsWorkingOnStats != 0);
                 }
@@ -117,8 +105,7 @@ namespace HoloToolkit.Unity
         private float timeSinceLastUpdate = 0.0f;
 
         // Functions
-        protected override void Awake()
-        {
+        protected override void Awake() {
             base.Awake();
 
             // Cache references to required component
@@ -127,39 +114,32 @@ namespace HoloToolkit.Unity
             UnderstandingCustomMesh = GetComponent<SpatialUnderstandingCustomMesh>();
         }
 
-        private void Start()
-        {
+        private void Start() {
             // Initialize the DLL
-            if (AllowSpatialUnderstanding)
-            {
+            if(AllowSpatialUnderstanding) {
                 SpatialUnderstandingDll.Imports.SpatialUnderstanding_Init();
             }
         }
 
-        private void Update()
-        {
-            if (!AllowSpatialUnderstanding)
-            {
+        private void Update() {
+            if(!AllowSpatialUnderstanding) {
                 return;
             }
 
             // Only update every few frames, and only if we aren't pulling in a mesh 
             // already.
             timeSinceLastUpdate += Time.deltaTime;
-            if ((!UnderstandingCustomMesh.IsImportActive) &&
-                (Time.frameCount % 3 == 0))
-            {
+            if((!UnderstandingCustomMesh.IsImportActive) &&
+                (Time.frameCount % 3 == 0)) {
                 // Real-Time scan
                 Update_Scan(timeSinceLastUpdate);
                 timeSinceLastUpdate = 0;
             }
         }
 
-        protected override void OnDestroy()
-        {
+        protected override void OnDestroy() {
             // Term the DLL
-            if (AllowSpatialUnderstanding)
-            {
+            if(AllowSpatialUnderstanding) {
                 SpatialUnderstandingDll.Imports.SpatialUnderstanding_Term();
             }
 
@@ -170,10 +150,8 @@ namespace HoloToolkit.Unity
         /// Call to request that scanning should begin. If AutoBeginScanning
         /// is false, this function should be used to initiate the scanning process.
         /// </summary>
-        public void RequestBeginScanning()
-        {
-            if (ScanState == ScanStates.None)
-            {
+        public void RequestBeginScanning() {
+            if(ScanState == ScanStates.None) {
                 ScanState = ScanStates.ReadyToScan;
             }
         }
@@ -184,12 +162,11 @@ namespace HoloToolkit.Unity
         /// Scanning until this is called. The spatial understanding queries will not function
         /// until the playspace is finalized.
         /// </summary>
-        public void RequestFinishScan()
-        {
+        public void RequestFinishScan() {
             //if (AllowSpatialUnderstanding)
             //{
-                SpatialUnderstandingDll.Imports.GeneratePlayspace_RequestFinish();
-                ScanState = ScanStates.Finishing;
+            SpatialUnderstandingDll.Imports.GeneratePlayspace_RequestFinish();
+            ScanState = ScanStates.Finishing;
             //}
         }
 
@@ -198,30 +175,26 @@ namespace HoloToolkit.Unity
         /// and issue a final mesh import, when the scan is complete.
         /// </summary>
         /// <param name="deltaTime">The amount of time that has passed since the last update (typically Time.deltaTime)</param>
-        private void Update_Scan(float deltaTime)
-        {
+        private void Update_Scan(float deltaTime) {
             // If we auto-start scanning, do it now
-            if (AutoBeginScanning &&
-                (ScanState == ScanStates.None))
-            {
+            if(AutoBeginScanning &&
+                (ScanState == ScanStates.None)) {
                 RequestBeginScanning();
             }
 
             // Update the scan
             bool scanDone = false;
-            if (((ScanState == ScanStates.ReadyToScan) ||
+            if(((ScanState == ScanStates.ReadyToScan) ||
                  (ScanState == ScanStates.Scanning) ||
                  (ScanState == ScanStates.Finishing)) &&
-                (AllowSpatialUnderstanding))
-            {
+                (AllowSpatialUnderstanding)) {
                 // Camera
                 Vector3 camPos = Camera.main.transform.position;
                 Vector3 camFwd = Camera.main.transform.forward;
                 Vector3 camUp = Camera.main.transform.up;
 
                 // If not yet initialized, do that now
-                if (ScanState == ScanStates.ReadyToScan)
-                {
+                if(ScanState == ScanStates.ReadyToScan) {
                     SpatialUnderstandingDll.Imports.GeneratePlayspace_InitScan(
                         camPos.x, camPos.y, camPos.z,
                         camFwd.x, camFwd.y, camFwd.z,
@@ -233,8 +206,7 @@ namespace HoloToolkit.Unity
                 // Update
                 int meshCount;
                 IntPtr meshList;
-                if (UnderstandingSourceMesh.GetInputMeshList(out meshCount, out meshList))
-                {
+                if(UnderstandingSourceMesh.GetInputMeshList(out meshCount, out meshList)) {
                     var stopWatch = System.Diagnostics.Stopwatch.StartNew();
 
                     scanDone = SpatialUnderstandingDll.Imports.GeneratePlayspace_UpdateScan(
@@ -246,25 +218,23 @@ namespace HoloToolkit.Unity
 
                     stopWatch.Stop();
 
-                    if (stopWatch.Elapsed.TotalMilliseconds > (1000.0 / 30.0))
-                    {
+                    if(stopWatch.Elapsed.TotalMilliseconds > (1000.0 / 30.0)) {
                         Debug.LogWarningFormat("SpatialUnderstandingDll.Imports.GeneratePlayspace_UpdateScan took {0,9:N2} ms", stopWatch.Elapsed.TotalMilliseconds);
                     }
                 }
             }
 
             // If it's done, finish up
-            if ((ScanState == ScanStates.Finishing) &&
+            if((ScanState == ScanStates.Finishing) &&
                 (scanDone) &&
                 (!UnderstandingCustomMesh.IsImportActive) &&
-                (UnderstandingCustomMesh != null))
-            {
+                (UnderstandingCustomMesh != null)) {
                 // Final mesh import
                 StartCoroutine(UnderstandingCustomMesh.Import_UnderstandingMesh());
 
                 // Mark it
                 ScanState = ScanStates.Done;
-                if (OnScanDone != null) OnScanDone.Invoke();
+                if(OnScanDone != null) OnScanDone.Invoke();
             }
         }
     }

@@ -3,16 +3,14 @@
 
 using UnityEngine;
 
-namespace HoloToolkit.Unity
-{
+namespace HoloToolkit.Unity {
     /// <summary>
     /// A Tagalong that extends SimpleTagalong that allows for specifying the
     /// minimum and target percentage of the object to keep in the view frustum
     /// of the camera and that keeps the Tagalong object in front of other
     /// holograms including the Spatial Mapping Mesh.
     /// </summary>
-    public class Tagalong : SimpleTagalong
-    {
+    public class Tagalong : SimpleTagalong {
         // These members allow for specifying target and minimum percentage in
         // the FOV.
         [Range(0.0f, 1.0f), Tooltip("The minimum horizontal percentage visible before the object starts tagging along.")]
@@ -48,8 +46,7 @@ namespace HoloToolkit.Unity
         [Tooltip("Useful for visualizing the Raycasts used for determining the depth to place the Tagalong. Set to 'None' to disable.")]
         public Light DebugPointLight;
 
-        protected override void Start()
-        {
+        protected override void Start() {
             base.Start();
 
             // Remember the default for distance.
@@ -58,8 +55,7 @@ namespace HoloToolkit.Unity
             // If the specified minimum distance for the tagalong would be within the
             // camera's near clipping plane, adjust it to be 10% beyond the near
             // clipping plane.
-            if (Camera.main.nearClipPlane > MinimumTagalongDistance)
-            {
+            if(Camera.main.nearClipPlane > MinimumTagalongDistance) {
                 MinimumTagalongDistance = Camera.main.nearClipPlane * 1.1f;
             }
 
@@ -69,24 +65,20 @@ namespace HoloToolkit.Unity
             EnforceDistance = false;
 
             // Add the FixedAngularSize script if MaintainFixedSize is true.
-            if (MaintainFixedSize)
-            {
+            if(MaintainFixedSize) {
                 gameObject.AddComponent<FixedAngularSize>();
             }
         }
 
-        protected override void Update()
-        {
+        protected override void Update() {
             base.Update();
 
-            if (!interpolator.AnimatingPosition)
-            {
+            if(!interpolator.AnimatingPosition) {
                 // If we aren't animating towards a new position, check to see if
                 // we need to update the Tagalong's position because it is behind
                 // some other hologram or the Spatial Mapping mesh.
                 Vector3 newPosition;
-                if (AdjustTagalongDistance(out newPosition))
-                {
+                if(AdjustTagalongDistance(out newPosition)) {
                     interpolator.PositionPerSecond = DepthUpdateSpeed;
                     interpolator.SetTargetPosition(newPosition);
                     TagalongDistance = Mathf.Min(defaultTagalongDistance, Vector3.Distance(Camera.main.transform.position, newPosition));
@@ -94,8 +86,7 @@ namespace HoloToolkit.Unity
             }
         }
 
-        protected override bool CalculateTagalongTargetPosition(Vector3 fromPosition, out Vector3 toPosition)
-        {
+        protected override bool CalculateTagalongTargetPosition(Vector3 fromPosition, out Vector3 toPosition) {
             bool needsToMoveX = false;
             bool needsToMoveY = false;
             toPosition = fromPosition;
@@ -132,7 +123,7 @@ namespace HoloToolkit.Unity
             // Based on left/right of center choose the appropriate directional
             // vector and frustum plane for the rest of our horizontal calculations.
             Vector3 horizontalTowardCenter = tagalongIsRightOfCenter ? -transform.right : transform.right;
-            Plane verticalFrustumPlane = tagalongIsRightOfCenter ? frustumPlanes[frustumRight] : frustumPlanes[frustumLeft];
+            Plane verticalFrustumPlane = tagalongIsRightOfCenter ? frustumPlanes [frustumRight] : frustumPlanes [frustumLeft];
 
             // Find the edge of the collider that is closest to the center plane.
             Vector3 centermostHorizontalEdge = colliderBounds.center + (horizontalTowardCenter * (width / 2f));
@@ -145,15 +136,13 @@ namespace HoloToolkit.Unity
             // of interest, we need to move the tagalong so it is at least
             // TargetHorizontalOverlap inside the view frustum.
             needsToMoveX = verticalFrustumPlane.GetDistanceToPoint(targetPoint) < 0;
-            if (needsToMoveX || DebugDrawLines)
-            {
+            if(needsToMoveX || DebugDrawLines) {
                 // Calculate the new target position, ignoring the vertical.
                 Vector3 newCalculatedTargetPosition =
                     CalculateTargetPosition(true, centermostHorizontalEdge, horizontalTowardCenter, width,
                     colliderBounds.center, verticalFrustumPlane, tagalongIsRightOfCenter);
 
-                if (needsToMoveX)
-                {
+                if(needsToMoveX) {
                     newToPosition.x = newCalculatedTargetPosition.x;
                     newToPosition.z = newCalculatedTargetPosition.z;
                 }
@@ -168,26 +157,23 @@ namespace HoloToolkit.Unity
             Plane horizontalCenterPlane = new Plane(cameraTransform.up, cameraPosition + cameraTransform.forward);
             bool tagalongIsAboveCenter = horizontalCenterPlane.GetDistanceToPoint(colliderBounds.center) > 0;
             Vector3 verticalTowardCenter = tagalongIsAboveCenter ? -transform.up : transform.up;
-            Plane horizontalFrustumPlane = tagalongIsAboveCenter ? frustumPlanes[frustumTop] : frustumPlanes[frustumBottom];
+            Plane horizontalFrustumPlane = tagalongIsAboveCenter ? frustumPlanes [frustumTop] : frustumPlanes [frustumBottom];
             Vector3 centermostVerticalEdge = colliderBounds.center + (verticalTowardCenter * (height / 2f));
             targetPoint = centermostVerticalEdge + (-verticalTowardCenter * (height * MinimumVerticalOverlap));
             // We've determined the Tagalong needs to move in the YZ plane.
             needsToMoveY = horizontalFrustumPlane.GetDistanceToPoint(targetPoint) < 0;
-            if (needsToMoveY || DebugDrawLines)
-            {
+            if(needsToMoveY || DebugDrawLines) {
                 // Calculate the new target position, ignoring the vertical.
                 Vector3 newCalculatedTargetPosition =
                     CalculateTargetPosition(false, centermostVerticalEdge, verticalTowardCenter, height,
                     colliderBounds.center, horizontalFrustumPlane, !tagalongIsAboveCenter);
-                if (needsToMoveY)
-                {
+                if(needsToMoveY) {
                     newToPosition.y = newCalculatedTargetPosition.y;
                     newToPosition.z = newCalculatedTargetPosition.z;
                 }
             }
 
-            if (needsToMoveX || needsToMoveY)
-            {
+            if(needsToMoveX || needsToMoveY) {
                 Ray ray = new Ray(cameraPosition, newToPosition - cameraPosition);
                 toPosition = ray.GetPoint(TagalongDistance);
             }
@@ -207,8 +193,7 @@ namespace HoloToolkit.Unity
         /// <param name="invertAngle">True if the tagalong is to the right of or below the center of the FOV; false otherwise.</param>
         /// <returns>The new target position for the Tagalong.</returns>
         private Vector3 CalculateTargetPosition(bool isHorizontal, Vector3 centermostEdge, Vector3 vectorTowardCenter, float width,
-            Vector3 center, Plane frustumPlane, bool invertAngle)
-        {
+            Vector3 center, Plane frustumPlane, bool invertAngle) {
             Transform cameraTransform = Camera.main.transform;
             Vector3 cameraPosition = cameraTransform.position;
 
@@ -254,8 +239,7 @@ namespace HoloToolkit.Unity
             return newCalculatedTargetPosition;
         }
 
-        private bool AdjustTagalongDistance(out Vector3 newPosition)
-        {
+        private bool AdjustTagalongDistance(out Vector3 newPosition) {
             bool needsUpdating = false;
 
             // Get the actual width and height of the Tagalong's BoxCollider.
@@ -272,25 +256,20 @@ namespace HoloToolkit.Unity
             // that are closer than MinimumColliderDistance.
             RaycastHit closestHit = new RaycastHit();
             float closestHitDistance = float.PositiveInfinity;
-            RaycastHit[] allHits;
-            for (int x = 0; x < HorizontalRayCount; x++)
-            {
+            RaycastHit [] allHits;
+            for(int x = 0; x < HorizontalRayCount; x++) {
                 Vector3 xCoord = lowerLeftCorner + transform.right * (x * width / (HorizontalRayCount - 1));
-                for (int y = 0; y < VerticalRayCount; y++)
-                {
+                for(int y = 0; y < VerticalRayCount; y++) {
                     Vector3 targetCoord = xCoord + transform.up * (y * height / (VerticalRayCount - 1));
 
                     allHits = Physics.RaycastAll(cameraPosition, targetCoord - cameraPosition, defaultTagalongDistance * 1.5f);
-                    for (int h = 0; h < allHits.Length; h++)
-                    {
-                        if (allHits[h].distance >= MinimumTagalongDistance &&
-                            allHits[h].distance < closestHitDistance &&
-                            !allHits[h].transform.IsChildOf(transform))
-                        {
-                            closestHit = allHits[h];
+                    for(int h = 0; h < allHits.Length; h++) {
+                        if(allHits [h].distance >= MinimumTagalongDistance &&
+                            allHits [h].distance < closestHitDistance &&
+                            !allHits [h].transform.IsChildOf(transform)) {
+                            closestHit = allHits [h];
                             closestHitDistance = closestHit.distance;
-                            if (DebugPointLight != null)
-                            {
+                            if(DebugPointLight != null) {
                                 Light clonedLight = Instantiate(DebugPointLight, closestHit.point, Quaternion.identity) as Light;
                                 clonedLight.color = Color.red;
                                 DestroyObject(clonedLight, 1.0f);
@@ -305,8 +284,7 @@ namespace HoloToolkit.Unity
 
             // If we hit something, the closestHitDistance will be < infinity.
             needsUpdating = closestHitDistance < float.PositiveInfinity;
-            if (needsUpdating)
-            {
+            if(needsUpdating) {
                 // The closestHitDistance is a straight-line from the camera to the
                 // point on the collider that was hit. Unless the closest hit was
                 // encountered on the center Raycast, using the distance found will
@@ -320,9 +298,7 @@ namespace HoloToolkit.Unity
 
                 // Make sure we aren't trying to move too close.
                 closestHitDistance = Mathf.Max(closestHitDistance, MinimumTagalongDistance);
-            }
-            else if (TagalongDistance != defaultTagalongDistance)
-            {
+            } else if(TagalongDistance != defaultTagalongDistance) {
                 // If we didn't hit anything but the TagalongDistance is different
                 // from the defaultTagalongDistance, we still need to update.
                 needsUpdating = true;
@@ -334,15 +310,12 @@ namespace HoloToolkit.Unity
         }
 
 #if UNITY_EDITOR
-        protected void DebugDrawLine(bool draw, Vector3 start, Vector3 end)
-        {
+        protected void DebugDrawLine(bool draw, Vector3 start, Vector3 end) {
             DebugDrawLine(draw, start, end, Color.white);
         }
 
-        protected void DebugDrawLine(bool draw, Vector3 start, Vector3 end, Color color)
-        {
-            if (draw)
-            {
+        protected void DebugDrawLine(bool draw, Vector3 start, Vector3 end, Color color) {
+            if(draw) {
                 Debug.DrawLine(start, end, color);
             }
         }
@@ -352,8 +325,7 @@ namespace HoloToolkit.Unity
         /// </summary>
         /// <param name="draw">If true, drawing happens.</param>
         /// <param name="colliderBounds">The bounds to draw the box.</param>
-        void DebugDrawColliderBox(bool draw, Bounds colliderBounds)
-        {
+        void DebugDrawColliderBox(bool draw, Bounds colliderBounds) {
             Vector3 extents = colliderBounds.extents;
 
             Vector3 frontUpperLeft, backUpperLeft, backUpperRight, frontUpperRight;
@@ -387,8 +359,7 @@ namespace HoloToolkit.Unity
         void DebugDrawDebuggingLines(bool draw, Vector3 center, Vector3 cameraPosition,
             Vector3 cameraToTarget,
             Vector3 centeredPoint, Vector3 pointOnFrustum, Vector3 recalculatedPointOnFrustum,
-            Vector3 calculatedPosition)
-        {
+            Vector3 calculatedPosition) {
             DebugDrawLine(draw, cameraPosition, center, Color.blue);
             DebugDrawLine(draw, cameraPosition, cameraToTarget, Color.yellow);
             DebugDrawLine(draw, cameraPosition, centeredPoint, Color.red);
